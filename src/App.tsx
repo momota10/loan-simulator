@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import {
   Container,
   Grid,
@@ -25,6 +26,7 @@ import {
   Divider,
 } from '@material-ui/core';
 import { lightGreen } from '@material-ui/core/colors';
+import TermsOfService from './TermsOfService';
 
 const theme = createTheme({
   palette: {
@@ -58,7 +60,7 @@ interface YearlyBreakdown {
 
 type RepaymentMethod = 'equal_principal_and_interest' | 'equal_principal';
 
-function App() {
+function LoanSimulator() {
   const [loanAmount, setLoanAmount] = useState<number>(30000000);
   const [displayLoanAmount, setDisplayLoanAmount] = useState<string>(loanAmount.toLocaleString());
   const [interestRate, setInterestRate] = useState<number>(1.5);
@@ -224,140 +226,154 @@ function App() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Container maxWidth="md" style={{ marginTop: 32, marginBottom: 32 }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center">
-          ローンシミュレーター
-        </Typography>
-        <Paper elevation={3} style={{ padding: 24, borderRadius: 8 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                id="loanAmount"
-                label="借入額（円）"
-                value={displayLoanAmount}
-                onChange={(e) => handleNumericInputChange(e, setLoanAmount, setDisplayLoanAmount)}
-                onBlur={handleLoanAmountBlur}
-                variant="outlined"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                id="interestRate"
-                label="年利率（%）"
-                value={interestRate}
-                onChange={(e) => handleNumericInputChange(e, setInterestRate)}
-                variant="outlined"
-                type="number"
-                inputProps={{ step: "0.1" }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                id="loanTerm"
-                label="返済期間（年）"
-                value={loanTerm}
-                onChange={(e) => handleNumericInputChange(e, setLoanTerm)}
-                variant="outlined"
-                type="number"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <RadioGroup
-                row
-                aria-label="repayment-method"
-                name="repayment-method"
-                value={repaymentMethod}
-                onChange={(e) => setRepaymentMethod(e.target.value as RepaymentMethod)}
-              >
-                <FormControlLabel value="equal_principal_and_interest" control={<Radio />} label="元利均等返済" />
-                <FormControlLabel value="equal_principal" control={<Radio />} label="元金均等返済" />
-              </RadioGroup>
-            </Grid>
+    <Container maxWidth="md" style={{ marginTop: 32, marginBottom: 32 }}>
+      <Typography variant="h4" component="h1" gutterBottom align="center">
+        ローンシミュレーター
+      </Typography>
+      <Paper elevation={3} style={{ padding: 24, borderRadius: 8 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              id="loanAmount"
+              label="借入額（円）"
+              value={displayLoanAmount}
+              onChange={(e) => handleNumericInputChange(e, setLoanAmount, setDisplayLoanAmount)}
+              onBlur={handleLoanAmountBlur}
+              variant="outlined"
+            />
           </Grid>
-        </Paper>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              id="interestRate"
+              label="年利率（%）"
+              value={interestRate}
+              onChange={(e) => handleNumericInputChange(e, setInterestRate)}
+              variant="outlined"
+              type="number"
+              inputProps={{ step: "0.1" }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              id="loanTerm"
+              label="返済期間（年）"
+              value={loanTerm}
+              onChange={(e) => handleNumericInputChange(e, setLoanTerm)}
+              variant="outlined"
+              type="number"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <RadioGroup
+              row
+              aria-label="repayment-method"
+              name="repayment-method"
+              value={repaymentMethod}
+              onChange={(e) => setRepaymentMethod(e.target.value as RepaymentMethod)}
+            >
+              <FormControlLabel value="equal_principal_and_interest" control={<Radio />} label="元利均等返済" />
+              <FormControlLabel value="equal_principal" control={<Radio />} label="元金均等返済" />
+            </RadioGroup>
+          </Grid>
+        </Grid>
+      </Paper>
 
-        {totalPayment !== null && (
-          <>
-            <Paper elevation={3} style={{ padding: 24, marginTop: 32, borderRadius: 8 }}>
-              <Typography variant="h5" component="h2" gutterBottom>
-                計算結果
-              </Typography>
-              <List>
-                {repaymentMethod === 'equal_principal_and_interest' && monthlyPayment !== null && (
+      {totalPayment !== null && (
+        <>
+          <Paper elevation={3} style={{ padding: 24, marginTop: 32, borderRadius: 8 }}>
+            <Typography variant="h5" component="h2" gutterBottom>
+              計算結果
+            </Typography>
+            <List>
+              {repaymentMethod === 'equal_principal_and_interest' && monthlyPayment !== null && (
+                <ListItem>
+                  <ListItemText primary="毎月の返済額" />
+                  <Typography variant="body1">{Math.round(monthlyPayment).toLocaleString()} 円</Typography>
+                </ListItem>
+              )}
+              {repaymentMethod === 'equal_principal' && firstMonthPayment !== null && lastMonthPayment !== null && (
+                <>
                   <ListItem>
-                    <ListItemText primary="毎月の返済額" />
-                    <Typography variant="body1">{Math.round(monthlyPayment).toLocaleString()} 円</Typography>
+                    <ListItemText primary="初回返済額" />
+                    <Typography variant="body1">{Math.round(firstMonthPayment).toLocaleString()} 円</Typography>
                   </ListItem>
-                )}
-                {repaymentMethod === 'equal_principal' && firstMonthPayment !== null && lastMonthPayment !== null && (
-                  <>
-                    <ListItem>
-                      <ListItemText primary="初回返済額" />
-                      <Typography variant="body1">{Math.round(firstMonthPayment).toLocaleString()} 円</Typography>
-                    </ListItem>
-                    <Divider component="li" />
-                    <ListItem>
-                      <ListItemText primary="最終回返済額" />
-                      <Typography variant="body1">{Math.round(lastMonthPayment).toLocaleString()} 円</Typography>
-                    </ListItem>
-                  </>
-                )}
-                <Divider component="li" />
-                <ListItem>
-                  <ListItemText primary="総返済額" />
-                  <Typography variant="body1">{Math.round(totalPayment).toLocaleString()} 円</Typography>
-                </ListItem>
-                <Divider component="li" />
-                <ListItem>
-                  <ListItemText primary="利息総額" />
-                  <Typography variant="body1">{Math.round(totalInterest!).toLocaleString()} 円</Typography>
-                </ListItem>
-              </List>
-            </Paper>
+                  <Divider component="li" />
+                  <ListItem>
+                    <ListItemText primary="最終回返済額" />
+                    <Typography variant="body1">{Math.round(lastMonthPayment).toLocaleString()} 円</Typography>
+                  </ListItem>
+                </>
+              )}
+              <Divider component="li" />
+              <ListItem>
+                <ListItemText primary="総返済額" />
+                <Typography variant="body1">{Math.round(totalPayment).toLocaleString()} 円</Typography>
+              </ListItem>
+              <Divider component="li" />
+              <ListItem>
+                <ListItemText primary="利息総額" />
+                <Typography variant="body1">{Math.round(totalInterest!).toLocaleString()} 円</Typography>
+              </ListItem>
+            </List>
+          </Paper>
 
-            <Paper elevation={3} style={{ padding: 24, marginTop: 32, borderRadius: 8 }}>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h5" component="h2">
-                  年次返済内訳
-                </Typography>
-                <Button variant="contained" color="primary" onClick={exportToCsv}>
-                  CSVエクスポート
-                </Button>
-              </Box>
-              <TableContainer>
-                <Table stickyHeader aria-label="repayment breakdown table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>年</TableCell>
-                      <TableCell align="right">元利返済額</TableCell>
-                      <TableCell align="right">元本返済額</TableCell>
-                      <TableCell align="right">利息支払額</TableCell>
-                      <TableCell align="right">年末残高</TableCell>
+          <Paper elevation={3} style={{ padding: 24, marginTop: 32, borderRadius: 8 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+              <Typography variant="h5" component="h2">
+                年次返済内訳
+              </Typography>
+              <Button variant="contained" color="primary" onClick={exportToCsv}>
+                CSVエクスポート
+              </Button>
+            </Box>
+            <TableContainer>
+              <Table stickyHeader aria-label="repayment breakdown table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>年</TableCell>
+                    <TableCell align="right">元利返済額</TableCell>
+                    <TableCell align="right">元本返済額</TableCell>
+                    <TableCell align="right">利息支払額</TableCell>
+                    <TableCell align="right">年末残高</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {yearlyBreakdown.map((item) => (
+                    <TableRow key={item.year} hover>
+                      <TableCell component="th" scope="row">{item.year}</TableCell>
+                      <TableCell align="right">{Math.round(item.yearlyPayment).toLocaleString()} 円</TableCell>
+                      <TableCell align="right">{Math.round(item.principalPaid).toLocaleString()} 円</TableCell>
+                      <TableCell align="right">{Math.round(item.interestPaid).toLocaleString()} 円</TableCell>
+                      <TableCell align="right">{Math.round(item.remainingBalance).toLocaleString()} 円</TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {yearlyBreakdown.map((item) => (
-                      <TableRow key={item.year} hover>
-                        <TableCell component="th" scope="row">{item.year}</TableCell>
-                        <TableCell align="right">{Math.round(item.yearlyPayment).toLocaleString()} 円</TableCell>
-                        <TableCell align="right">{Math.round(item.principalPaid).toLocaleString()} 円</TableCell>
-                        <TableCell align="right">{Math.round(item.interestPaid).toLocaleString()} 円</TableCell>
-                        <TableCell align="right">{Math.round(item.remainingBalance).toLocaleString()} 円</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
-          </>
-        )}
-      </Container>
-    </ThemeProvider>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </>
+      )}
+    </Container>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Routes>
+          <Route path="/" element={<LoanSimulator />} />
+          <Route path="/terms" element={<TermsOfService />} />
+        </Routes>
+        <Box textAlign="center" my={4}>
+          <Link to="/terms">利用規約</Link>
+        </Box>
+      </ThemeProvider>
+    </Router>
   );
 }
 
